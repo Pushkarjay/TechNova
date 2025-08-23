@@ -1,0 +1,34 @@
+name: flutter_app
+description: A new Flutter project.
+
+publish_to: 'none' 
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.7.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  camera: ^0.10.0
+  path_provider: ^2.0.1
+  path: ^1.8.0
+  tflite_flutter: ^0.9.0
+  geolocator: ^9.0.0
+  permission_handler: ^10.0.0
+  sqflite: ^2.0.0
+  firebase_core: ^2.0.0
+  cloud_firestore: ^4.0.0
+  firebase_storage: ^11.0.0
+  firebase_auth: ^4.0.0
+  image_picker: ^0.8.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/tflite_model.tflite
