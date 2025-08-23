@@ -22,6 +22,7 @@ class FirebaseSync {
         await _firestore.collection('reports').add({
           'imageUrl': downloadURL,
           'violationType': report['violationType'],
+          'aiSuggestion': report['aiSuggestion'],
           'location': GeoPoint(report['lat'], report['lng']),
           'timestamp': DateTime.parse(report['timestamp']),
         });

@@ -15,7 +15,7 @@ function initMap() {
           title: report.violationType
         });
         const infowindow = new google.maps.InfoWindow({
-          content: `<h3>${report.violationType}</h3><img src="${report.imageUrl}" width="200">`
+          content: `<h3>${report.violationType}</h3><p>AI Suggestion: ${report.aiSuggestion}</p><img src="${report.imageUrl}" width="200">`
         });
         marker.addListener('click', () => {
           infowindow.open(map, marker);
