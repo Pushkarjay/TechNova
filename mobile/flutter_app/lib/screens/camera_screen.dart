@@ -6,41 +6,49 @@ import 'review_screen.dart';
 
 class CameraScreen extends StatefulWidget {
   final List<CameraDescription> cameras;
-  CameraScreen({this.cameras});
+  CameraScreen({required this.cameras});
 
   @override
   _CameraScreenState createState() => _CameraScreenState();
 }
 
 class _CameraScreenState extends State<CameraScreen> {
-  CameraController _controller;
-  Future<void> _initializeControllerFuture;
+  CameraController? _controller;
+  Future<void>? _initializeControllerFuture;
 
   @override
   void initState() {
     super.initState();
-    _controller = CameraController(
-      widget.cameras.first,
-      ResolutionPreset.medium,
-    );
-    _initializeControllerFuture = _controller.initialize();
+    if (widget.cameras.isNotEmpty) {
+      _controller = CameraController(
+        widget.cameras.first,
+        ResolutionPreset.medium,
+      );
+      _initializeControllerFuture = _controller!.initialize();
+    }
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_controller == null || !_controller!.value.isInitialized) {
+      return Scaffold(
+        appBar: AppBar(title: Text('Take a picture')),
+        body: Center(child: Text('Camera not available.')),
+      );
+    }
     return Scaffold(
       appBar: AppBar(title: Text('Take a picture')),
       body: FutureBuilder<void>(
         future: _initializeControllerFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            return CameraPreview(_controller);
+            return CameraPreview(_controller!);
           } else {
             return Center(child: CircularProgressIndicator());
           }
@@ -51,15 +59,11 @@ class _CameraScreenState extends State<CameraScreen> {
         onPressed: () async {
           try {
             await _initializeControllerFuture;
-            final path = join(
-              (await getTemporaryDirectory()).path,
-              '${DateTime.now()}.png',
-            );
-            await _controller.takePicture();
+            final image = await _controller!.takePicture();
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ReviewScreen(imagePath: path),
+                builder: (context) => ReviewScreen(imagePath: image.path),
               ),
             );
           } catch (e) {

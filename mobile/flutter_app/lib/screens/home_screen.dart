@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'camera_screen.dart';
-import '../services/firebase_sync.dart';
 
 class HomeScreen extends StatelessWidget {
-  final List<CameraDescription> cameras;
+  final List<CameraDescription>? cameras;
   HomeScreen({this.cameras});
-
-  final FirebaseSync _firebaseSync = FirebaseSync();
 
   @override
   Widget build(BuildContext context) {
@@ -21,23 +18,20 @@ class HomeScreen extends StatelessWidget {
           children: <Widget>[
             ElevatedButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CameraScreen(cameras: cameras),
-                  ),
-                );
+                if (cameras != null && cameras!.isNotEmpty) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CameraScreen(cameras: cameras!),
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Cameras not available.'))
+                  );
+                }
               },
               child: Text('Report a Billboard'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                _firebaseSync.syncReports();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Syncing reports...'))
-                );
-              },
-              child: Text('Sync Reports'),
             ),
           ],
         ),
