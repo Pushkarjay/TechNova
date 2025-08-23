@@ -20,10 +20,9 @@ dependencies:
   sqflite: ^2.0.0
   firebase_core: ^2.0.0
   cloud_firestore: ^4.0.0
-  firebase_storage: ^11.0.0
-  firebase_auth: ^4.0.0
   image_picker: ^0.8.5
   image: ^3.0.2
+  cloudinary_public: ^0.21.0
 
 dev_dependencies:
   flutter_test:

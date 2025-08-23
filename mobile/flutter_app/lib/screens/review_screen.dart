@@ -1,10 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../services/local_storage.dart';
-import '../services/firebase_sync.dart';
+import '../services/cloudinary_service.dart';
 import 'package:geolocator/geolocator.dart';
 import '../services/tfservice.dart';
 import 'package:image/image.dart' as img;
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ReviewScreen extends StatefulWidget {
   final String imagePath;
@@ -17,11 +18,13 @@ class ReviewScreen extends StatefulWidget {
 class _ReviewScreenState extends State<ReviewScreen> {
   String _violationType;
   final LocalStorage _localStorage = LocalStorage();
-  final FirebaseSync _firebaseSync = FirebaseSync();
+  final CloudinaryService _cloudinaryService = CloudinaryService();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   Position _currentPosition;
   final TFLiteService _tfLiteService = TFLiteService();
   List _recognitions;
   bool _loading = true;
+  bool _uploading = false;
 
   @override
   void initState() {
@@ -92,26 +95,35 @@ class _ReviewScreenState extends State<ReviewScreen> {
                       padding: const EdgeInsets.all(8.0),
                       child: Text('Location: ${_currentPosition.latitude}, ${_currentPosition.longitude}'),
                     ),
-                  ElevatedButton(
-                    onPressed: (_violationType != null && _currentPosition != null) ? () async {
-                      Map<String, dynamic> report = {
-                        'imagePath': widget.imagePath,
-                        'violationType': _violationType,
-                        'aiSuggestion': _recognitions != null && _recognitions.isNotEmpty ? _recognitions[0]['label'] : 'N/A',
-                        'lat': _currentPosition.latitude,
-                        'lng': _currentPosition.longitude,
-                        'timestamp': DateTime.now().toIso8601String(),
-                        'synced': 0,
-                      };
-                      await _localStorage.insertReport(report);
-                      _firebaseSync.syncReports();
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Report Saved!'))
-                      );
-                    } : null,
-                    child: Text('Submit Report'),
-                  )
+                  _uploading
+                      ? CircularProgressIndicator()
+                      : ElevatedButton(
+                          onPressed: (_violationType != null && _currentPosition != null)
+                              ? () async {
+                                  setState(() {
+                                    _uploading = true;
+                                  });
+                                  String imageUrl = await _cloudinaryService.uploadFile(widget.imagePath);
+                                  if (imageUrl != null) {
+                                    await _firestore.collection('reports').add({
+                                      'imageUrl': imageUrl,
+                                      'violationType': _violationType,
+                                      'aiSuggestion': _recognitions != null && _recognitions.isNotEmpty ? _recognitions[0]['label'] : 'N/A',
+                                      'location': GeoPoint(_currentPosition.latitude, _currentPosition.longitude),
+                                      'timestamp': FieldValue.serverTimestamp(),
+                                    });
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Report Submitted!')));
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Upload Failed. Please try again.')));
+                                  }
+                                  setState(() {
+                                    _uploading = false;
+                                  });
+                                }
+                              : null,
+                          child: Text('Submit Report'),
+                        )
                 ],
               ),
             ),
