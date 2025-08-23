@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart';
-import 'screens/review_screen.dart';
-import 'services/firebase_sync.dart';
+import 'screens/home_screen.dart';
 
 List<CameraDescription> cameras;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  cameras = await availableCameras();
+  try {
+    cameras = await availableCameras();
+  } on CameraException catch (e) {
+    print('Error: ${e.code}\nError Message: ${e.description}');
+  }
   runApp(MyApp());
 }
 
@@ -22,7 +23,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: CameraScreen(cameras: cameras),
+      home: HomeScreen(cameras: cameras),
     );
   }
 }
