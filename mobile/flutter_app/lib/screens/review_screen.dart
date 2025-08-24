@@ -133,7 +133,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                         style: Theme.of(context).textTheme.bodyMedium),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
-                      value: _violationType,
+                      initialValue: _violationType,
                       items: _violationTypes
                           .map(
                               (t) => DropdownMenuItem(value: t, child: Text(t)))
@@ -149,7 +149,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                         Expanded(
                           child: TextFormField(
                             controller: _latController,
-                            keyboardType: TextInputType.numberWithOptions(
+                            keyboardType: const TextInputType.numberWithOptions(
                                 decimal: true, signed: true),
                             decoration: const InputDecoration(
                               labelText: 'Latitude',
@@ -161,7 +161,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                         Expanded(
                           child: TextFormField(
                             controller: _lngController,
-                            keyboardType: TextInputType.numberWithOptions(
+                            keyboardType: const TextInputType.numberWithOptions(
                                 decimal: true, signed: true),
                             decoration: const InputDecoration(
                               labelText: 'Longitude',
@@ -206,11 +206,13 @@ class _ReviewScreenState extends State<ReviewScreen> {
                                   double.tryParse(_lngController.text);
                               await LocalStorage().insertReport({
                                 'title': _violationType,
-                                'description': _suggestion ?? '',
+                                'violationType': _violationType,
+                                'aiSuggestion': _suggestion ?? '',
                                 'lat': lat,
                                 'lng': lng,
-                                'image_path': _imageFile.path,
-                                'status': 0,
+                                'imagePath': _imageFile.path,
+                                'timestamp': DateTime.now().toIso8601String(),
+                                'synced': 0,
                               });
                               setState(() => _submitting = false);
 
@@ -222,17 +224,18 @@ class _ReviewScreenState extends State<ReviewScreen> {
                               }
 
                               if (!mounted) return;
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (!mounted) return;
+                                Navigator.of(context)
+                                    .pushReplacement(MaterialPageRoute(
                                   builder: (context) => ReportSummaryScreen(
                                     imagePath: _imageFile.path,
                                     lat: lat,
                                     lng: lng,
                                     status: 'Submitted',
                                   ),
-                                ),
-                              );
+                                ));
+                              });
                             },
                     ),
                   ],

@@ -1,3 +1,4 @@
+// ignore_for_file: prefer_const_constructors
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'screens/home_screen.dart';
@@ -17,7 +18,7 @@ Future<void> main() async {
   try {
     cameras = await availableCameras();
   } on CameraException catch (e) {
-    print('Error: ${e.code}\nError Message: ${e.description}');
+    debugPrint('Camera error: ${e.code} - ${e.description}');
   }
 
   try {
@@ -52,11 +53,10 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    final primary = Colors.tealAccent;
+    const primary = Colors.tealAccent;
     final dark = ThemeData.dark().copyWith(
       colorScheme:
           ColorScheme.fromSeed(seedColor: primary, brightness: Brightness.dark),
-      useMaterial3: true,
       scaffoldBackgroundColor: Colors.black,
       primaryColor: primary,
       appBarTheme: const AppBarTheme(
@@ -86,14 +86,13 @@ class _MyAppState extends State<MyApp> {
       visualDensity: VisualDensity.adaptivePlatformDensity,
     );
 
-    final lightPrimary = Colors.teal;
+    const lightPrimary = Colors.teal;
     final light = ThemeData.light().copyWith(
       colorScheme: ColorScheme.fromSeed(
           seedColor: lightPrimary, brightness: Brightness.light),
-      useMaterial3: true,
       scaffoldBackgroundColor: Colors.grey[50],
       primaryColor: lightPrimary,
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,

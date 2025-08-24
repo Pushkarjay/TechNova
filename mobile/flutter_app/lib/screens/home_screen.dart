@@ -35,12 +35,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _doSync() async {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Sync started')));
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.showSnackBar(const SnackBar(content: Text('Sync started')));
     await _sync.syncPendingReports();
     await _refreshPending();
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Sync complete')));
+    if (!mounted) return;
+    messenger.showSnackBar(const SnackBar(content: Text('Sync complete')));
   }
 
   @override
@@ -53,9 +53,10 @@ class _HomeScreenState extends State<HomeScreen> {
           children: <Widget>[
             ElevatedButton(
               onPressed: () async {
+                final outerContext = context;
                 showModalBottomSheet(
-                  context: context,
-                  builder: (context) {
+                  context: outerContext,
+                  builder: (sheetContext) {
                     return SafeArea(
                       child: Wrap(
                         children: [
@@ -63,18 +64,18 @@ class _HomeScreenState extends State<HomeScreen> {
                             leading: const Icon(Icons.camera_alt),
                             title: const Text('Take Photo'),
                             onTap: () {
-                              Navigator.pop(context);
+                              Navigator.pop(sheetContext);
                               if (widget.cameras != null &&
                                   widget.cameras!.isNotEmpty) {
-                                Navigator.push(
-                                  context,
+                                Navigator.of(outerContext).push(
                                   MaterialPageRoute(
-                                    builder: (context) =>
+                                    builder: (ctx) =>
                                         CameraScreen(cameras: widget.cameras!),
                                   ),
                                 );
                               } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
+                                if (!mounted) return;
+                                ScaffoldMessenger.of(outerContext).showSnackBar(
                                   const SnackBar(
                                       content: Text('Cameras not available.')),
                                 );
@@ -85,16 +86,16 @@ class _HomeScreenState extends State<HomeScreen> {
                             leading: const Icon(Icons.photo_library),
                             title: const Text('Choose from Gallery'),
                             onTap: () async {
-                              Navigator.pop(context);
+                              Navigator.pop(sheetContext);
                               final picker = ImagePicker();
+                              final navigator = Navigator.of(outerContext);
                               final picked = await picker.pickImage(
                                   source: ImageSource.gallery);
                               if (picked != null) {
-                                // ignore: use_build_context_synchronously
-                                Navigator.push(
-                                  context,
+                                if (!mounted) return;
+                                navigator.push(
                                   MaterialPageRoute(
-                                    builder: (context) =>
+                                    builder: (ctx) =>
                                         ReviewScreen(imagePath: picked.path),
                                   ),
                                 );
@@ -174,8 +175,9 @@ class _HomeScreenState extends State<HomeScreen> {
             FutureBuilder<List<Map<String, dynamic>>>(
               future: LocalStorage().getReports(),
               builder: (context, snap) {
-                if (!snap.hasData)
+                if (!snap.hasData) {
                   return const Center(child: CircularProgressIndicator());
+                }
                 final items = snap.data!;
                 if (items.isEmpty) return const Text('No pending reports');
                 return ListView.separated(
@@ -214,7 +216,10 @@ class _HomeScreenState extends State<HomeScreen> {
             color: Theme.of(context).colorScheme.primary,
             shadows: [
               Shadow(
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.4),
+                color: Theme.of(context)
+                    .colorScheme
+                    .primary
+                    .withAlpha((0.4 * 255).toInt()),
                 blurRadius: 8,
                 offset: const Offset(0, 0),
               ),
@@ -240,40 +245,44 @@ class _HomeScreenState extends State<HomeScreen> {
     final dashboardUrl =
         Uri.parse('https://pushkarjay.github.io/TechNova/dashboard/');
     try {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Opening live dashboard...')),
-      );
-      if (await canLaunchUrl(dashboardUrl)) {
+      final can = await canLaunchUrl(dashboardUrl);
+      if (!mounted) return;
+      if (can) {
         await launchUrl(dashboardUrl, mode: LaunchMode.externalApplication);
       } else {
         await Clipboard.setData(ClipboardData(text: dashboardUrl.toString()));
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
               content: Text(
-                  'Could not open dashboard automatically — URL copied to clipboard. Paste it in your browser.')),
-        );
+                  'Could not open dashboard automatically — URL copied to clipboard. Paste it in your browser.')));
+        });
       }
     } catch (e) {
       await Clipboard.setData(ClipboardData(text: dashboardUrl.toString()));
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Cannot open dashboard. URL copied to clipboard.')),
-      );
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Cannot open dashboard. URL copied to clipboard.')));
+      });
     }
   }
 
   Future<void> _seedSampleData() async {
+    final messenger = ScaffoldMessenger.of(context);
     await SampleData.seedLocalReports();
     await _refreshPending();
-    ScaffoldMessenger.of(context)
+    if (!mounted) return;
+    messenger
         .showSnackBar(const SnackBar(content: Text('Seeded demo reports')));
     setState(() {});
   }
 
   Future<void> _listPending() async {
+    final messenger = ScaffoldMessenger.of(context);
     final reports = await LocalStorage().getReports();
     final count = reports.length;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text('Pending reports: $count')));
+    if (!mounted) return;
+    messenger.showSnackBar(SnackBar(content: Text('Pending reports: $count')));
   }
 }

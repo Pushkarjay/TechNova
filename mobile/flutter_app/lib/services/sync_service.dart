@@ -16,12 +16,23 @@ class SyncService {
   bool _syncInProgress = false;
 
   SyncService() {
+    // Trigger sync on connectivity changes
     Connectivity().onConnectivityChanged.listen((status) {
       if (status != ConnectivityResult.none) {
         if (!_syncInProgress) {
           syncPendingReports();
         }
       }
+    });
+    // Also do an immediate check: if currently online, attempt a sync.
+    Connectivity().checkConnectivity().then((status) {
+      if (status != ConnectivityResult.none) {
+        if (!_syncInProgress) {
+          syncPendingReports();
+        }
+      }
+    }).catchError((e) {
+      debugPrint('Connectivity check failed: $e');
     });
   }
 
