@@ -26,6 +26,13 @@ Future<void> main() async {
     debugPrint('Firebase.initializeApp failed: $e');
   }
 
+  // Initialize persisted theme preference before building UI.
+  try {
+    await ThemeService.init();
+  } catch (e) {
+    debugPrint('ThemeService init failed: $e');
+  }
+
   runApp(const MyApp());
 }
 

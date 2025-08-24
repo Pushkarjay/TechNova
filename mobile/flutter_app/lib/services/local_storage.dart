@@ -17,7 +17,7 @@ class LocalStorage {
 
   _onCreate(Database db, int version) async {
     await db.execute(
-        'CREATE TABLE reports (id INTEGER PRIMARY KEY, imagePath TEXT, violationType TEXT, aiSuggestion TEXT, lat REAL, lng REAL, timestamp TEXT, synced INTEGER)');
+        'CREATE TABLE reports (id INTEGER PRIMARY KEY, title TEXT, imagePath TEXT, violationType TEXT, aiSuggestion TEXT, lat REAL, lng REAL, timestamp TEXT, synced INTEGER, userId TEXT)');
   }
 
   Future<void> insertReport(Map<String, dynamic> report) async {
