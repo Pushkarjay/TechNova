@@ -1,16 +1,31 @@
-# flutter_app
 
-A new Flutter project.
+# Billboard Reporter — Flutter App
 
-## Getting Started
+This is the Flutter mobile prototype for the Flagging Unauthorized Billboards project.
 
-This project is a starting point for a Flutter application.
+## Quick start (dev)
 
-A few resources to get you started if this is your first Flutter project:
+1. Install Flutter (stable channel) and set up your device/emulator.
+2. From the project root run:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+```powershell
+cd E:\Projects\Working\TechNova\mobile\flutter_app
+flutter pub get
+flutter run -d <device-id>
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+3. Optional: provide a `.env` file with Cloudinary or Firebase credentials for sync testing. The app is defensive and will still run without keys (it will save reports locally).
+
+## Project notes
+
+- Offline-first: reports are saved locally in SQLite (or JSON) and synced to Firestore/Cloudinary when connectivity is available.
+- Optional TF Lite model: put `tflite` model under `assets/` and declare it in `pubspec.yaml` if you want to test on-device inference.
+
+## Useful commands
+
+```powershell
+flutter clean
+flutter pub get
+flutter analyze
+flutter test
+```

@@ -1,62 +1,23 @@
-# Flagging Unauthorized Billboards
 
-This project is a mobile application to detect and report unauthorized billboards. It uses a hybrid approach of AI-based detection and manual user input.
+# Flagging Unauthorized Billboards — TechNova
 
-## Features
+This repository contains a hackathon prototype for detecting and reporting unauthorized billboards using a hybrid of on-device AI and human verification. It includes:
 
-- **Hybrid Detection:** Uses TensorFlow Lite for AI-powered suggestions and allows users to provide manual input.
-- **Photo-based Reporting:** Users can report billboards by taking pictures.
-- **Offline Support:** Reports can be saved locally and synced to the backend when an internet connection is available.
-- **Privacy-focused:** Anonymous reporting by default, with an option for users to identify themselves for rewards.
-- **Public Dashboard:** A web-based dashboard to visualize flagged billboards on a map.
+- A Flutter mobile app (offline-first) that captures photos, suggests violations using TF Lite, and queues reports for sync.
+- A lightweight static dashboard to visualize reports on a map (Google Maps or Leaflet fallback).
+- Demo tooling and docs (seeder, SRS, pitch deck, deployment notes).
 
-## Project Structure
+## Quick links
 
-```
-flagging-billboards/
-├── README.md
-├── mobile/
-│   ├── flutter_app/
-│   │   ├── lib/
-│   │   │   ├── main.dart
-│   │   │   ├── screens/
-│   │   │   │   ├── camera_screen.dart
-│   │   │   │   ├── review_screen.dart
-│   │   │   │   └── settings_screen.dart
-│   │   │   ├── models/
-│   │   │   ├── services/
-│   │   │   │   ├── tfservice.dart
-│   │   │   │   ├── local_storage.dart
-│   │   │   │   └── firebase_sync.dart
-│   │   ├── assets/
-│   │   │   └── tflite_model.tflite
-│   │   └── pubspec.yaml
-│   └── README.md
-├── backend/
-│   ├── firebase_rules.txt
-│   └── mock_db/
-│       └── authorized_billboards.json
-├── dashboard/
-│   ├── index.html
-│   ├── src/
-│   └── package.json
-├── docs/
-│   ├── SRS_and_QA.md
-│   └── architecture.png
-└── demo_video/
-    └── walkthrough.mp4
-```
+- `mobile/flutter_app` — Flutter app source
+- `dashboard` — static dashboard frontend
+- `backend/mock_db` — sample authorized billboard dataset
+- `docs/` — SRS, tech stack, compliance, assumptions, and demo scripts
 
-## Tech Stack
+## Getting started (developer)
 
-- **Mobile App:** Flutter
-- **Backend:** Firebase (Firestore, Storage)
-- **AI Model:** TensorFlow Lite
-- **Dashboard:** HTML/JS with Google Maps API
+1. Install Flutter and set up your device/emulator.
+2. Run the mobile app (see `mobile/flutter_app/README.md`).
+3. Serve the dashboard locally (see `dashboard/README.md`).
 
-## Getting Started
-
-1.  Clone the repository.
-2.  Set up a Firebase project and add the configuration files.
-3.  Build and run the Flutter application.
-4.  Launch the dashboard to view reports.
+If you'd like, I can also generate a single consolidated `README` for the entire project that includes step-by-step instructions and a quick demo checklist.

@@ -79,8 +79,11 @@ Build a Flutter mobile app to detect and report unauthorized/non-compliant billb
 - Keep data collection ethical — avoid facial recognition or broad public surveillance.
 
 ## 2.7 Assumptions
+- Users have smartphones with working cameras.
+- Internet availability may be intermittent.
 - Users will permit location access for geotagging (opt-in).
 - Device has camera and supports Flutter and TF Lite.
+- Municipal authorities may later provide official billboard databases for real integration.
 
 ## 2.8 Deliverables
 - Flutter mobile app (prototype).
@@ -154,16 +157,38 @@ flagging-billboards/
   - `tflite_flutter` or `tflite` (TF Lite inference)
   - `path_provider` & `sqflite` (local storage) or `hive`
   - `firebase_core`, `cloud_firestore`, `firebase_storage`, `firebase_auth` (if using Firebase)
+- `connectivity_plus` (detect network status for offline/online sync)
+- `provider` or `riverpod` (state management)
+- `flutter_local_notifications` (optional: notify user of sync status)
+- `intl` (date/time formatting)
 
 ## Backend & Dashboard
 - Firebase (Firestore + Storage) for rapid prototype
 - Public Dashboard: simple HTML/JS app using Google Maps JavaScript API (or React + Leaflet)
+- Node.js/Express (optional, for custom backend logic or admin tools)
+- Cloudinary (image hosting for prototype/demo)
+- Firebase Admin SDK (for seeding, moderation, or admin scripts)
 
 ## AI Model
 - TensorFlow -> export to TensorFlow Lite.
 - Base model: MobileNet-SSD / YOLOv5 or efficient object detector converted to TF Lite.
 - Labels: billboard bounding box + optional attributes (size estimate, textual content classification via OCR+classifier).
+- OCR: Google ML Kit or Tesseract (optional, for text extraction from billboards)
 
+## Dashboard Frontend
+- Google Maps JavaScript API (map, markers, heatmap)
+- Leaflet.js (fallback open-source map)
+- Firebase JS SDK (read/write reports)
+- Chart.js or D3.js (optional: analytics/visualization)
+
+## Utilities & Tooling
+- Python (for seeder script: `tools/seed_firestore.py`)
+- Firebase CLI (for rules deploy, emulators)
+- dotenv (for local env handling in Flutter)
+
+**Notes:**
+- The app is an offline-first prototype: reports are saved locally and synced to Cloudinary + Firestore by `SyncService`.
+- Sensitive keys are intentionally excluded from the repo; `dashboard/src/config.example.js` is included as a template.
 ---
 
 # 6. Implementation Notes
