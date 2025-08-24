@@ -36,10 +36,39 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final primary = Colors.tealAccent;
     return MaterialApp(
       title: 'Billboard Tipper',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+      theme: ThemeData.dark().copyWith(
+        colorScheme: ColorScheme.fromSeed(
+            seedColor: primary, brightness: Brightness.dark),
+        useMaterial3: true,
+        scaffoldBackgroundColor: Colors.black,
+        primaryColor: primary,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.black,
+          elevation: 0,
+          centerTitle: true,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: primary,
+            foregroundColor: Colors.black,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+          ),
+        ),
+        cardColor: const Color(0xFF1E1E1E),
+        bottomNavigationBarTheme: BottomNavigationBarThemeData(
+          backgroundColor: Colors.black,
+          selectedItemColor: primary,
+          unselectedItemColor: Colors.white70,
+        ),
+        textTheme: ThemeData.dark()
+            .textTheme
+            .apply(bodyColor: Colors.white, displayColor: Colors.white),
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: HomeScreen(cameras: cameras),

@@ -16,9 +16,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Profile')),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
-        child: _loggedIn ? _buildLoggedIn() : _buildLoginForm(),
+        child: Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: _loggedIn ? _buildLoggedIn() : _buildLoginForm(),
+          ),
+        ),
       ),
     );
   }
@@ -26,6 +31,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildLoginForm() {
     final controller = TextEditingController(text: _username);
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         TextField(
           controller: controller,
@@ -33,7 +39,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           onChanged: (v) => _username = v,
         ),
         const SizedBox(height: 12),
-        ElevatedButton(
+        ElevatedButton.icon(
+          icon: const Icon(Icons.login),
+          label: const Text('Sign Up / Login (local)'),
           onPressed: () {
             if (controller.text.isNotEmpty) {
               setState(() {
@@ -42,22 +50,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
               });
             }
           },
-          child: const Text('Sign Up / Login (local)'),
         ),
         const SizedBox(height: 12),
-        ElevatedButton(
+        ElevatedButton.icon(
+          icon: const Icon(Icons.cloud_download),
+          label: const Text('Seed Demo Reports'),
           onPressed: () async {
-            // seed demo sample reports into local DB
             await SampleData.seedLocalReports();
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Seeded demo reports locally')));
             }
           },
-          child: const Text('Seed Demo Reports'),
         ),
         const SizedBox(height: 12),
-        ElevatedButton(
+        ElevatedButton.icon(
+          icon: const Icon(Icons.person_search),
+          label: const Text('Load Sample Profile'),
           onPressed: () {
             final user = SampleData.sampleUser();
             setState(() {
@@ -65,7 +74,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _loggedIn = true;
             });
           },
-          child: const Text('Load Sample Profile'),
         ),
       ],
     );
@@ -73,18 +81,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildLoggedIn() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Signed in as: $_username'),
+        Text('Signed in as: $_username',
+            style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 12),
-        ElevatedButton(
+        ElevatedButton.icon(
+          icon: const Icon(Icons.logout),
+          label: const Text('Logout'),
           onPressed: () {
             setState(() {
               _loggedIn = false;
               _username = '';
             });
           },
-          child: const Text('Logout'),
         )
       ],
     );
