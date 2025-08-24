@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'local_storage.dart';
 import 'cloudinary_service.dart';
 
@@ -12,9 +13,22 @@ class SyncService {
   // inside syncPendingReports and fall back to marking reports as synced
   // locally for demo purposes when Firebase is unavailable.
   FirebaseFirestore? _firestore;
+  bool _syncInProgress = false;
+
+  SyncService() {
+    Connectivity().onConnectivityChanged.listen((status) {
+      if (status != ConnectivityResult.none) {
+        if (!_syncInProgress) {
+          syncPendingReports();
+        }
+      }
+    });
+  }
 
   /// Try to sync all pending local reports. Non-blocking; errors are logged.
   Future<void> syncPendingReports() async {
+    if (_syncInProgress) return;
+    _syncInProgress = true;
     try {
       final pending = await _local.getReports();
       for (var row in pending) {
@@ -59,6 +73,8 @@ class SyncService {
       }
     } catch (e) {
       debugPrint('Sync service failed: $e');
+    } finally {
+      _syncInProgress = false;
     }
   }
 
