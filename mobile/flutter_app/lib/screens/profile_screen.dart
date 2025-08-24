@@ -33,25 +33,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        TextField(
-          controller: controller,
-          decoration: const InputDecoration(labelText: 'Display name'),
-          onChanged: (v) => _username = v,
-        ),
-        const SizedBox(height: 12),
         ElevatedButton.icon(
           icon: const Icon(Icons.login),
-          label: const Text('Sign Up / Login (local)'),
+          label: const Text('Sign Up / Login'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.teal,
+            foregroundColor: Colors.white,
+            textStyle: const TextStyle(fontWeight: FontWeight.bold),
+          ),
           onPressed: () {
             if (controller.text.isNotEmpty) {
               setState(() {
                 _username = controller.text;
                 _loggedIn = true;
               });
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Please enter a display name.')),
+              );
             }
           },
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
+        TextField(
+          controller: controller,
+          decoration: const InputDecoration(labelText: 'Display name'),
+          onChanged: (v) => _username = v,
+        ),
+        const Divider(height: 32),
+        const Text('Demo Actions',
+            style: TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
         ElevatedButton.icon(
           icon: const Icon(Icons.cloud_download),
           label: const Text('Seed Demo Reports'),
@@ -75,6 +87,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
             });
           },
         ),
+        const Divider(height: 32),
+        ElevatedButton.icon(
+          icon: const Icon(Icons.settings),
+          label: const Text('Settings'),
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Settings'),
+                content: const Text(
+                    'Settings placeholder. No real settings in prototype.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Close'),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
       ],
     );
   }
@@ -89,13 +122,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ElevatedButton.icon(
           icon: const Icon(Icons.logout),
           label: const Text('Logout'),
-          onPressed: () {
-            setState(() {
-              _loggedIn = false;
-              _username = '';
-            });
+          onPressed: () async {
+            final confirm = await showDialog<bool>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Confirm Logout'),
+                content: const Text('Are you sure you want to logout?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('Logout'),
+                  ),
+                ],
+              ),
+            );
+            if (confirm == true) {
+              setState(() {
+                _loggedIn = false;
+                _username = '';
+              });
+            }
           },
-        )
+        ),
+        const Divider(height: 32),
+        ElevatedButton.icon(
+          icon: const Icon(Icons.settings),
+          label: const Text('Settings'),
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Settings'),
+                content: const Text(
+                    'Settings placeholder. No real settings in prototype.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Close'),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
       ],
     );
   }

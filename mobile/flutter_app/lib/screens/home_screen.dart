@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'camera_screen.dart';
+import 'review_screen.dart';
 import '../services/sync_service.dart';
 import 'profile_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
 import '../services/local_storage.dart';
 import '../services/sample_data.dart';
@@ -51,20 +52,60 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             ElevatedButton(
-              onPressed: () {
-                if (widget.cameras != null && widget.cameras!.isNotEmpty) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          CameraScreen(cameras: widget.cameras!),
-                    ),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Cameras not available.')),
-                  );
-                }
+              onPressed: () async {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (context) {
+                    return SafeArea(
+                      child: Wrap(
+                        children: [
+                          ListTile(
+                            leading: const Icon(Icons.camera_alt),
+                            title: const Text('Take Photo'),
+                            onTap: () {
+                              Navigator.pop(context);
+                              if (widget.cameras != null &&
+                                  widget.cameras!.isNotEmpty) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        CameraScreen(cameras: widget.cameras!),
+                                  ),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text('Cameras not available.')),
+                                );
+                              }
+                            },
+                          ),
+                          ListTile(
+                            leading: const Icon(Icons.photo_library),
+                            title: const Text('Choose from Gallery'),
+                            onTap: () async {
+                              Navigator.pop(context);
+                              final picker = ImagePicker();
+                              final picked = await picker.pickImage(
+                                  source: ImageSource.gallery);
+                              if (picked != null) {
+                                // ignore: use_build_context_synchronously
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ReviewScreen(imagePath: picked.path),
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
               },
               child: const Text('Report a Billboard'),
             ),
@@ -196,54 +237,28 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _openDashboard() async {
-    final candidates = <Uri>[];
-    candidates.add(Uri.parse('http://10.0.128.248:8000'));
-    candidates.add(Uri.parse('http://10.0.2.2:8000'));
-    candidates.add(Uri.parse('http://localhost:8000'));
+    final dashboardUrl =
+        Uri.parse('https://pushkarjay.github.io/TechNova/dashboard/');
     try {
-      final ifaces = await NetworkInterface.list();
-      for (final iface in ifaces) {
-        for (final addr in iface.addresses) {
-          if (addr.type == InternetAddressType.IPv4 && !addr.isLoopback) {
-            candidates.insert(0, Uri.parse('http://${addr.address}:8000'));
-          }
-        }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Opening live dashboard...')),
+      );
+      if (await canLaunchUrl(dashboardUrl)) {
+        await launchUrl(dashboardUrl, mode: LaunchMode.externalApplication);
+      } else {
+        await Clipboard.setData(ClipboardData(text: dashboardUrl.toString()));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text(
+                  'Could not open dashboard automatically — URL copied to clipboard. Paste it in your browser.')),
+        );
       }
-    } catch (e) {}
-
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Trying to open dashboard at ${candidates.first}')));
-
-    bool opened = false;
-    for (final uri in candidates) {
-      try {
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
-          opened = true;
-          break;
-        }
-        final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
-        if (ok) {
-          opened = true;
-          break;
-        }
-      } catch (e) {
-        continue;
-      }
-    }
-
-    if (!opened) {
-      try {
-        await Clipboard.setData(
-            ClipboardData(text: candidates.first.toString()));
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text(
-                'Could not open dashboard automatically — URL copied to clipboard. Paste it in your phone browser.')));
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text(
-                'Cannot open dashboard. Make sure your PC and phone are on the same Wi‑Fi and run the dashboard server on port 8000.')));
-      }
+    } catch (e) {
+      await Clipboard.setData(ClipboardData(text: dashboardUrl.toString()));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Cannot open dashboard. URL copied to clipboard.')),
+      );
     }
   }
 

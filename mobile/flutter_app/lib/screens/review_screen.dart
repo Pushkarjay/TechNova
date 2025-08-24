@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import '../services/local_storage.dart';
 import '../services/sync_service.dart';
 import '../services/sample_data.dart';
+import 'report_summary_screen.dart';
 
 class ReviewScreen extends StatefulWidget {
   final String imagePath;
@@ -26,12 +27,32 @@ class _ReviewScreenState extends State<ReviewScreen> {
   bool _submitting = false;
   File get _imageFile => File(widget.imagePath);
 
+  final TextEditingController _latController = TextEditingController();
+  final TextEditingController _lngController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     final sample = SampleData.getRandomReport();
     _suggestion = sample['aiSuggestion'];
     _violationType = sample['violationType'];
+    _initLocation();
+  }
+
+  Future<void> _initLocation() async {
+    final loc = await _getCurrentLocation();
+    if (loc != null) {
+      _latController.text = loc['lat']?.toString() ?? '';
+      _lngController.text = loc['lng']?.toString() ?? '';
+      setState(() {});
+    }
+  }
+
+  @override
+  void dispose() {
+    _latController.dispose();
+    _lngController.dispose();
+    super.dispose();
   }
 
   Future<Map<String, double>?> _getCurrentLocation() async {
@@ -123,6 +144,47 @@ class _ReviewScreenState extends State<ReviewScreen> {
                           const InputDecoration(labelText: 'Violation Type'),
                     ),
                     const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _latController,
+                            keyboardType: TextInputType.numberWithOptions(
+                                decimal: true, signed: true),
+                            decoration: const InputDecoration(
+                              labelText: 'Latitude',
+                              prefixIcon: Icon(Icons.location_on),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _lngController,
+                            keyboardType: TextInputType.numberWithOptions(
+                                decimal: true, signed: true),
+                            decoration: const InputDecoration(
+                              labelText: 'Longitude',
+                              prefixIcon: Icon(Icons.location_on),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.map),
+                      label: const Text('Pick on Map'),
+                      onPressed: () async {
+                        // Placeholder: In a real app, open a map picker here.
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text(
+                                  'Map picker not implemented in prototype. Edit lat/lng manually.')),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 12),
                     ElevatedButton.icon(
                       icon: const Icon(Icons.send),
                       label: const Text('Submit Report'),
@@ -130,12 +192,15 @@ class _ReviewScreenState extends State<ReviewScreen> {
                           ? null
                           : () async {
                               setState(() => _submitting = true);
-                              final loc = await _getCurrentLocation();
+                              double? lat =
+                                  double.tryParse(_latController.text);
+                              double? lng =
+                                  double.tryParse(_lngController.text);
                               await LocalStorage().insertReport({
                                 'title': _violationType,
                                 'description': _suggestion ?? '',
-                                'lat': loc?['lat'],
-                                'lng': loc?['lng'],
+                                'lat': lat,
+                                'lng': lng,
                                 'image_path': _imageFile.path,
                                 'status': 0,
                               });
@@ -149,15 +214,17 @@ class _ReviewScreenState extends State<ReviewScreen> {
                               }
 
                               if (!mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text('Report submitted')),
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ReportSummaryScreen(
+                                    imagePath: _imageFile.path,
+                                    lat: lat,
+                                    lng: lng,
+                                    status: 'Submitted',
+                                  ),
+                                ),
                               );
-
-                              // Give the user a moment to read the confirmation then close.
-                              await Future.delayed(
-                                  const Duration(milliseconds: 800));
-                              if (mounted) Navigator.pop(context);
                             },
                     ),
                   ],
