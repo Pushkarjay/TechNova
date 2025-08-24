@@ -16,7 +16,7 @@ class ReviewScreen extends StatefulWidget {
 
 class _ReviewScreenState extends State<ReviewScreen> {
   String? _violationType;
-  final CloudinaryService _cloudinaryService = CloudinaryService();
+  late final CloudinaryService _cloudinaryService;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   Position? _currentPosition;
   final TFLiteService _tfLiteService = TFLiteService();
@@ -27,6 +27,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
   @override
   void initState() {
     super.initState();
+    _cloudinaryService = CloudinaryService();
     _getCurrentLocation();
     _tfLiteService.loadModel().then((value) {
       predict();
@@ -34,7 +35,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
   }
 
   Future<void> predict() async {
-    img.Image? image = img.decodeImage(File(widget.imagePath).readAsBytesSync());
+    img.Image? image =
+        img.decodeImage(File(widget.imagePath).readAsBytesSync());
     if (image != null) {
       var recognitions = await _tfLiteService.runModel(image);
       if (mounted) {
@@ -54,7 +56,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       // Location services are not enabled don't continue
-      // accessing the position and request users of the 
+      // accessing the position and request users of the
       // App to enable the location services.
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -99,8 +101,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
     } catch (e) {
       debugPrint("Could not get location: $e");
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Error getting location: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error getting location: $e')));
       }
     }
   }
@@ -171,8 +173,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                                       'location': GeoPoint(
                                           _currentPosition!.latitude,
                                           _currentPosition!.longitude),
-                                      'timestamp':
-                                          FieldValue.serverTimestamp(),
+                                      'timestamp': FieldValue.serverTimestamp(),
                                     });
                                     if (mounted) {
                                       Navigator.pop(context);

@@ -4,14 +4,12 @@ import 'camera_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   final List<CameraDescription>? cameras;
-  HomeScreen({this.cameras});
+  const HomeScreen({super.key, this.cameras});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Billboard Tipper'),
-      ),
+      appBar: AppBar(title: const Text('Billboard Tipper')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -27,11 +25,11 @@ class HomeScreen extends StatelessWidget {
                   );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Cameras not available.'))
+                    const SnackBar(content: Text('Cameras not available.')),
                   );
                 }
               },
-              child: Text('Report a Billboard'),
+              child: const Text('Report a Billboard'),
             ),
           ],
         ),

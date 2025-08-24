@@ -34,7 +34,6 @@ class TFLiteService {
 
   Uint8List _preprocessImage(img.Image image) {
     img.Image resizedImage = img.copyResize(image, width: 224, height: 224);
-    var imageBytes = resizedImage.getBytes();
     var buffer = Float32List(1 * 224 * 224 * 3);
     var bufferIndex = 0;
     for (var y = 0; y < resizedImage.height; y++) {

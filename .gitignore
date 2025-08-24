@@ -1,3 +1,6 @@
+# Dashboard local config
+/dashboard/src/config.js
+
 # Gradle files
 .gradle/
 build/
@@ -29,5 +32,8 @@ render.experimental.xml
 # Google Services (e.g. APIs or Firebase)
 google-services.json
 
+# Environment files
+.env
+.env.local
 # Android Profiling
 *.hprof

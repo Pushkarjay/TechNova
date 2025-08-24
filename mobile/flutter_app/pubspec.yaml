@@ -14,7 +14,7 @@ dependencies:
   camera: ^0.10.6
   path_provider: ^2.0.1
   path: ^1.8.0
-  tflite_flutter: ^0.10.4
+  tflite_flutter: ^0.11.0
   geolocator: ^11.0.0
   permission_handler: ^11.0.0
   sqflite: ^2.2.0
@@ -23,10 +23,12 @@ dependencies:
   image_picker: ^1.0.0
   image: ^4.0.0
   cloudinary_public: ^0.23.0
+  flutter_dotenv: ^5.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_lints: ^2.0.0
 
 flutter:
   uses-material-design: true
