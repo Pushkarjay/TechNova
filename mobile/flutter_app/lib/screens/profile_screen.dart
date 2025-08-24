@@ -33,9 +33,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // Local display-name login preserved.
         ElevatedButton.icon(
           icon: const Icon(Icons.login),
-          label: const Text('Sign Up / Login'),
+          label: const Text('Sign Up / Login (local)'),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.teal,
             foregroundColor: Colors.white,
@@ -52,6 +53,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SnackBar(content: Text('Please enter a display name.')),
               );
             }
+          },
+        ),
+        const SizedBox(height: 12),
+        // Production sign-in options shown but disabled for prototype.
+        ElevatedButton.icon(
+          icon: const Icon(Icons.login),
+          label: const Text('Sign in with Google (coming in production)'),
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (c) => AlertDialog(
+                title: const Text('Coming in production'),
+                content: const Text(
+                    'Google Sign-In will be available in production builds.'),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.pop(c),
+                      child: const Text('OK'))
+                ],
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 8),
+        ElevatedButton.icon(
+          icon: const Icon(Icons.email),
+          label: const Text('Email / Password (coming in production)'),
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (c) => AlertDialog(
+                title: const Text('Coming in production'),
+                content: const Text(
+                    'Email/Password sign-in will be available in production builds.'),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.pop(c),
+                      child: const Text('OK'))
+                ],
+              ),
+            );
           },
         ),
         const SizedBox(height: 16),

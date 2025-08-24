@@ -30,8 +30,8 @@ This file lists the technologies and packages used in the prototype and recommen
 
 ## Dashboard / Frontend
 
-- Google Maps JavaScript API — primary map + markers + heatmap
-- Leaflet.js — open-source fallback for the map
+- Leaflet.js — primary map library for the prototype (uses OpenStreetMap tiles).
+- Google Maps JavaScript API — optional production integration ("coming in production") for advanced features like Places/Routes and premium basemaps.
 - Firebase JS SDK — client-side read access to `reports` collection
 - Chart.js or D3.js — optional analytics and charts for moderation dashboard
 

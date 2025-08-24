@@ -30,7 +30,7 @@ These are the answers to the step-by-step questions we asked while planning the 
 - **Mobile app platform:** Flutter (cross-platform).
 - **Storage & reporting:** Offline-first: store reports locally (JSON/SQLite) when no internet; when online, sync to Firebase backend (Firestore / Storage).
 - **Privacy:** Anonymous by default (photo + geotag + violation type). Optional user login for rewards/leaderboard; personal ID stored privately in backend and NOT shown on public dashboard.
-- **Public dashboard:** Yes — web dashboard with Google Maps API showing pins/heatmap of flagged billboards (public-facing, no personal info).
+- **Public dashboard:** Yes — web dashboard will display flagged billboards. For the prototype the dashboard uses Leaflet/OpenStreetMap tiles; Google Maps integration is listed as an optional production feature ("coming in production").
 - **Rewards/Gamification:** Optional; only for users who opt-in with login.
 
 ---
@@ -62,9 +62,9 @@ Build a Flutter mobile app to detect and report unauthorized/non-compliant billb
 - **Optional login**: email-based sign-in for rewards/leaderboard.
 
 ### Backend & Dashboard
-- **Backend storage**: Firestore for metadata, Firebase Storage for photos.
+- **Backend storage**: Firestore for metadata, Firebase Storage for photos (optional in the prototype).
 - **Mock DB**: a Firestore collection (or local JSON) with authorized billboard entries (id, lat/lng, dimensions, city).
-- **Public dashboard**: web page that reads public reports from Firestore and displays them as markers or heatmap using Google Maps JavaScript API.
+- **Public dashboard**: web page that reads public reports from Firestore and displays them as markers/heatmap. The prototype uses Leaflet/OpenStreetMap tiles; Google Maps integration is planned for production ("coming in production").
 
 ## 2.5 Non-Functional Requirements
 - **Performance**: on-device inference < 2–3 seconds for a single photo on a modest smartphone.

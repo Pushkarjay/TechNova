@@ -176,11 +176,19 @@ class _ReviewScreenState extends State<ReviewScreen> {
                       icon: const Icon(Icons.map),
                       label: const Text('Pick on Map'),
                       onPressed: () async {
-                        // Placeholder: In a real app, open a map picker here.
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text(
-                                  'Map picker not implemented in prototype. Edit lat/lng manually.')),
+                        // Map picker is a production feature for the prototype.
+                        showDialog(
+                          context: context,
+                          builder: (c) => AlertDialog(
+                            title: const Text('Map picker'),
+                            content: const Text(
+                                'Map picker will be available in production builds. For now, edit latitude/longitude manually.'),
+                            actions: [
+                              TextButton(
+                                  onPressed: () => Navigator.pop(c),
+                                  child: const Text('OK'))
+                            ],
+                          ),
                         );
                       },
                     ),
