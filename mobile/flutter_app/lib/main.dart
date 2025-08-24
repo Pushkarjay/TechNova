@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'screens/home_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 List<CameraDescription>? cameras;
 
@@ -13,14 +14,21 @@ Future<void> main() async {
     await dotenv.load(fileName: ".env");
   } catch (e) {
     // `.env` is optional for local development; log and continue.
-    print('dotenv.load failed (continuing without .env): $e');
+    debugPrint('dotenv.load failed (continuing without .env): $e');
   }
   try {
     cameras = await availableCameras();
   } on CameraException catch (e) {
     print('Error: ${e.code}\nError Message: ${e.description}');
   }
-  runApp(MyApp());
+  // Initialize Firebase for Firestore usage in SyncService
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    debugPrint('Firebase.initializeApp failed: $e');
+  }
+
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {

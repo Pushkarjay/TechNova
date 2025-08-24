@@ -1,0 +1,29 @@
+[
+  {
+    "id": "sample-1",
+    "violationType": "Obstructive Billboard",
+    "aiSuggestion": "Unauthorized placement over sidewalk",
+    "status": "unauthorized",
+    "location": { "latitude": 19.0760, "longitude": 72.8777 },
+    "imageUrl": "https://via.placeholder.com/400x300.png?text=Billboard+Mumbai",
+    "timestamp": 1692835200000
+  },
+  {
+    "id": "sample-2",
+    "violationType": "Excessive Size",
+    "aiSuggestion": "May exceed local size restrictions",
+    "status": "authorized",
+    "location": { "latitude": 28.6139, "longitude": 77.2090 },
+    "imageUrl": "https://via.placeholder.com/400x300.png?text=Billboard+Delhi",
+    "timestamp": 1692921600000
+  },
+  {
+    "id": "sample-3",
+    "violationType": "Unpermitted Lightbox",
+    "aiSuggestion": "No permitting visible",
+    "status": "unauthorized",
+    "location": { "latitude": 12.9716, "longitude": 77.5946 },
+    "imageUrl": "https://via.placeholder.com/400x300.png?text=Billboard+Bangalore",
+    "timestamp": 1693008000000
+  }
+]

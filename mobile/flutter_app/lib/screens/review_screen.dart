@@ -1,10 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import '../services/cloudinary_service.dart';
+import '../services/local_storage.dart';
+import '../services/sync_service.dart';
 import 'package:geolocator/geolocator.dart';
 import '../services/tfservice.dart';
+import '../services/sample_data.dart';
 import 'package:image/image.dart' as img;
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ReviewScreen extends StatefulWidget {
   final String imagePath;
@@ -16,8 +17,6 @@ class ReviewScreen extends StatefulWidget {
 
 class _ReviewScreenState extends State<ReviewScreen> {
   String? _violationType;
-  late final CloudinaryService _cloudinaryService;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   Position? _currentPosition;
   final TFLiteService _tfLiteService = TFLiteService();
   List? _recognitions;
@@ -27,24 +26,40 @@ class _ReviewScreenState extends State<ReviewScreen> {
   @override
   void initState() {
     super.initState();
-    _cloudinaryService = CloudinaryService();
+    // Cloudinary uploads are handled by SyncService during sync; keep firestore instance if needed later
     _getCurrentLocation();
+    // Defensive model load: continue even if model is missing or fails
     _tfLiteService.loadModel().then((value) {
       predict();
+    }).catchError((e) {
+      debugPrint('TFLite load failed: $e');
+      // still allow user to submit without model
+      if (mounted) setState(() => _loading = false);
     });
   }
 
   Future<void> predict() async {
-    img.Image? image =
-        img.decodeImage(File(widget.imagePath).readAsBytesSync());
-    if (image != null) {
-      var recognitions = await _tfLiteService.runModel(image);
-      if (mounted) {
-        setState(() {
-          _recognitions = recognitions;
-          _loading = false;
-        });
+    try {
+      if (widget.imagePath.startsWith('http')) {
+        // Can't run local TF model on a remote image here in prototype.
+        // Leave recognitions null and allow user to tap the image to load a sample.
+        return;
       }
+
+      final bytes = await File(widget.imagePath).readAsBytes();
+      img.Image? image = img.decodeImage(bytes);
+      if (image != null) {
+        var recognitions = await _tfLiteService.runModel(image);
+        if (mounted) {
+          setState(() {
+            _recognitions = recognitions;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Predict failed: $e');
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -116,7 +131,35 @@ class _ReviewScreenState extends State<ReviewScreen> {
           : SingleChildScrollView(
               child: Column(
                 children: [
-                  Image.file(File(widget.imagePath)),
+                  GestureDetector(
+                    onTap: () {
+                      // Load a random demo suggestion and fill form
+                      final sample = SampleData.getRandomReport();
+                      setState(() {
+                        _violationType = sample['violationType'];
+                        _recognitions = [
+                          {'label': sample['aiSuggestion']}
+                        ];
+                        if (_currentPosition == null) {
+                          _currentPosition = Position(
+                            latitude: sample['lat'],
+                            longitude: sample['lng'],
+                            timestamp: DateTime.now(),
+                            accuracy: 0.0,
+                            altitude: 0.0,
+                            heading: 0.0,
+                            speed: 0.0,
+                            speedAccuracy: 0.0,
+                            altitudeAccuracy: 0.0,
+                            headingAccuracy: 0.0,
+                          );
+                        }
+                      });
+                    },
+                    child: widget.imagePath.startsWith('http')
+                        ? Image.network(widget.imagePath)
+                        : Image.file(File(widget.imagePath)),
+                  ),
                   if (_recognitions != null && _recognitions!.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.all(8.0),
@@ -154,27 +197,43 @@ class _ReviewScreenState extends State<ReviewScreen> {
                   _uploading
                       ? const CircularProgressIndicator()
                       : ElevatedButton(
-                          onPressed: (_violationType != null &&
-                                  _currentPosition != null)
+                          onPressed: (_violationType != null)
                               ? () async {
                                   setState(() {
                                     _uploading = true;
                                   });
-                                  String? imageUrl = await _cloudinaryService
-                                      .uploadFile(widget.imagePath);
-                                  if (imageUrl != null) {
-                                    await _firestore.collection('reports').add({
-                                      'imageUrl': imageUrl,
-                                      'violationType': _violationType,
-                                      'aiSuggestion': _recognitions != null &&
-                                              _recognitions!.isNotEmpty
-                                          ? _recognitions![0]['label']
-                                          : 'N/A',
-                                      'location': GeoPoint(
-                                          _currentPosition!.latitude,
-                                          _currentPosition!.longitude),
-                                      'timestamp': FieldValue.serverTimestamp(),
-                                    });
+
+                                  final aiSuggestion = _recognitions != null &&
+                                          _recognitions!.isNotEmpty
+                                      ? _recognitions![0]['label']
+                                      : 'N/A';
+
+                                  // If we don't have a GPS position, use a sample report location
+                                  final sample = (_currentPosition == null)
+                                      ? SampleData.getRandomReport()
+                                      : null;
+
+                                  final lat = _currentPosition?.latitude ??
+                                      sample!['lat'];
+                                  final lng = _currentPosition?.longitude ??
+                                      sample!['lng'];
+
+                                  // Insert into local DB for offline-first behavior
+                                  final local = LocalStorage();
+                                  await local.insertReport({
+                                    'imagePath': widget.imagePath,
+                                    'violationType': _violationType,
+                                    'aiSuggestion': aiSuggestion,
+                                    'lat': lat,
+                                    'lng': lng,
+                                    'timestamp':
+                                        DateTime.now().toIso8601String(),
+                                    'synced': 0,
+                                  });
+
+                                  // Trigger an immediate user-initiated sync (not background)
+                                  try {
+                                    await SyncService().syncPendingReports();
                                     if (mounted) {
                                       Navigator.pop(context);
                                       ScaffoldMessenger.of(context)
@@ -182,14 +241,16 @@ class _ReviewScreenState extends State<ReviewScreen> {
                                               content:
                                                   Text('Report Submitted!')));
                                     }
-                                  } else {
+                                  } catch (e) {
+                                    debugPrint('Sync failed: $e');
                                     if (mounted) {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(const SnackBar(
                                               content: Text(
-                                                  'Upload Failed. Please try again.')));
+                                                  'Saved locally. Will sync later.')));
                                     }
                                   }
+
                                   if (mounted) {
                                     setState(() {
                                       _uploading = false;

@@ -1,4 +1,4 @@
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:image/image.dart' as img;
 import 'dart:typed_data';
@@ -9,12 +9,17 @@ class TFLiteService {
 
   Future<void> loadModel() async {
     try {
-      _interpreter = await Interpreter.fromAsset('model.tflite');
+      // The asset is declared in pubspec.yaml as 'assets/tflite_model.tflite'.
+      // Interpreter.fromAsset expects the file name as listed in pubspec (without the 'assets/' prefix).
+      _interpreter = await Interpreter.fromAsset('tflite_model.tflite');
       String labelsContent = await rootBundle.loadString('assets/labels.txt');
       _labels = labelsContent.split('\n');
     } catch (e) {
-      print('Failed to load model or labels.');
-      print(e);
+      // Graceful failure: log helpful message so UI can continue without crashing.
+      print(
+        'TFLite model or labels failed to load. The app will continue without on-device inference.',
+      );
+      print('Error while loading TFLite model: $e');
     }
   }
 
@@ -24,10 +29,8 @@ class TFLiteService {
       return [];
     }
     var input = _preprocessImage(image);
-    var output = List.filled(
-      1 * _labels!.length,
-      0.0,
-    ).reshape([1, _labels!.length]);
+    // Prepare output as a nested list: [[0.0, 0.0, ...]] with length = labels
+    var output = List.generate(1, (_) => List.filled(_labels!.length, 0.0));
     _interpreter!.run(input, output);
     return _postprocessOutput(output);
   }

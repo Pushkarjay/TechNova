@@ -24,6 +24,7 @@ dependencies:
   image: ^4.0.0
   cloudinary_public: ^0.23.0
   flutter_dotenv: ^5.1.0
+  url_launcher: ^6.1.7
 
 dev_dependencies:
   flutter_test:
@@ -33,5 +34,5 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/tflite_model.tflite
-    - assets/labels.txt
+  # - assets/tflite_model.tflite
+  - assets/labels.txt

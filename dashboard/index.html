@@ -2,52 +2,112 @@
 <html>
 <head>
   <title>Flagged Billboards Dashboard</title>
-  <script src="src/config.js"></script>
   <script>
+    // Try to load optional config.js. If it exists and defines window.APP_CONFIG we
+    // will initialize Firebase + Google Maps; otherwise we'll fall back to a
+    // Leaflet + sample-data renderer so the dashboard works without API keys.
     (function() {
-      // Dynamically load Firebase and Maps using values from src/config.js (gitignored)
-      function initFirebaseAndMaps() {
-        if (!window.APP_CONFIG) {
-          console.error('APP_CONFIG not found. Create dashboard/src/config.js from config.example.js');
-          return;
-        }
-        // Initialize Firebase using provided config object
-        if (typeof firebase !== 'undefined' && window.APP_CONFIG.FIREBASE_CONFIG) {
-          firebase.initializeApp(window.APP_CONFIG.FIREBASE_CONFIG);
-        }
-        // Load Firestore after firebase is ready (if not already loaded)
-        // Load Google Maps dynamically with the provided API key
-        var mapsKey = window.APP_CONFIG.GOOGLE_MAPS_API_KEY;
-        if (!mapsKey) {
-          console.error('GOOGLE_MAPS_API_KEY missing from APP_CONFIG');
-          return;
-        }
-        var script = document.createElement('script');
-        script.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(mapsKey) + '&callback=initMap';
-        script.async = true;
-        script.defer = true;
-        document.head.appendChild(script);
-      }
+      var loadOptional = function(src, onload, onerror) {
+        var s = document.createElement('script');
+        s.src = src;
+        s.async = true;
+        s.onload = onload;
+        s.onerror = onerror;
+        document.head.appendChild(s);
+      };
 
-      // Load Firebase SDKs first, then initialize everything
-      if (typeof firebase === 'undefined') {
+      loadOptional('src/config.js', function() {
+        // config.js loaded (or existed); proceed to init firebase + maps in main.js
+        console.log('Loaded src/config.js');
+        // Now load firebase if needed; main.js will attempt to use firebase when available.
         var fb = document.createElement('script');
         fb.src = 'https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js';
         fb.onload = function() {
           var fb2 = document.createElement('script');
           fb2.src = 'https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js';
-          fb2.onload = initFirebaseAndMaps;
           document.head.appendChild(fb2);
         };
         document.head.appendChild(fb);
-      } else {
-        initFirebaseAndMaps();
+        // If APP_CONFIG exists and has a maps key, load Google Maps with callback
+        try {
+          var mapsKey = (window.APP_CONFIG && window.APP_CONFIG.GOOGLE_MAPS_API_KEY) ? window.APP_CONFIG.GOOGLE_MAPS_API_KEY : null;
+          if (mapsKey) {
+            var script = document.createElement('script');
+            script.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(mapsKey) + '&callback=initMap';
+            script.async = true;
+            script.defer = true;
+            document.head.appendChild(script);
+          } else {
+            // No maps key provided: fall back to Leaflet
+            console.warn('No GOOGLE_MAPS_API_KEY in APP_CONFIG — using Leaflet fallback');
+            loadLeafletFallback();
+          }
+        } catch (e) {
+          console.warn('Error reading APP_CONFIG, falling back to Leaflet', e);
+          loadLeafletFallback();
+        }
+      }, function() {
+        // config.js didn't load — use Leaflet fallback which reads sample_data/reports.json
+        console.warn('src/config.js not found — using Leaflet fallback');
+        loadLeafletFallback();
+      });
+
+      function loadLeafletFallback() {
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+        document.head.appendChild(link);
+
+        var s = document.createElement('script');
+        s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+        s.onload = function() {
+          var sf = document.createElement('script');
+          sf.src = 'src/leaflet_fallback.js';
+          document.head.appendChild(sf);
+        };
+        document.head.appendChild(s);
       }
     })();
+  </script>
+  <script>
+    // If Google Maps doesn't call initMap within 2500ms, assume it failed and
+    // load the Leaflet fallback so the dashboard remains usable.
+    window._mapInitialized = false;
+    function _mapReady() { window._mapInitialized = true; }
+    setTimeout(function() {
+      if (!window._mapInitialized) {
+        console.warn('Map init timed out; loading Leaflet fallback');
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+        document.head.appendChild(link);
+        var s = document.createElement('script');
+        s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+        s.onload = function() {
+          var sf = document.createElement('script');
+          sf.src = 'src/leaflet_fallback.js';
+          document.head.appendChild(sf);
+        };
+        document.head.appendChild(s);
+      }
+    }, 2500);
   </script>
   <script src="src/main.js"></script>
 </head>
 <body>
+  <div id="header" style="position: fixed; z-index: 2147483647; left: 12px; top: 12px; background: rgba(255,255,255,0.95); padding: 8px 12px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); pointer-events: auto;">
+    <strong>Flagged Billboards</strong>
+    <div style="margin-top:6px; display:flex; gap:8px; align-items:center;">
+      <div id="counts">Loading…</div>
+      <label for="filter">Filter:</label>
+      <select id="filter">
+        <option value="all">All</option>
+        <option value="unauthorized">Unauthorized</option>
+        <option value="authorized">Authorized</option>
+      </select>
+      <button id="refresh">Refresh</button>
+    </div>
+  </div>
   <div id="map" style="height: 100vh; width: 100%;"></div>
 </body>
 </html>

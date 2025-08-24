@@ -1,3 +1,17 @@
+// Local dashboard config example - DO NOT commit production secrets here.
+window.APP_CONFIG = {
+  GOOGLE_MAPS_API_KEY: 'REPLACE_WITH_GOOGLE_MAPS_API_KEY',
+  FIREBASE_API_KEY: 'REPLACE_WITH_FIREBASE_API_KEY',
+  FIREBASE_PROJECT_ID: 'REPLACE_WITH_FIREBASE_PROJECT_ID',
+  FIREBASE_CONFIG: {
+    apiKey: 'REPLACE_WITH_FIREBASE_API_KEY',
+    authDomain: 'REPLACE_WITH_FIREBASE_AUTH_DOMAIN',
+    projectId: 'REPLACE_WITH_FIREBASE_PROJECT_ID',
+    storageBucket: 'REPLACE_WITH_FIREBASE_STORAGE_BUCKET',
+    messagingSenderId: 'REPLACE_WITH_FIREBASE_MESSAGING_SENDER_ID',
+    appId: 'REPLACE_WITH_FIREBASE_APP_ID'
+  }
+};
 // Copy this file to src/config.js and fill in your real keys.
 // src/config.js is gitignored and never committed.
 window.APP_CONFIG = {

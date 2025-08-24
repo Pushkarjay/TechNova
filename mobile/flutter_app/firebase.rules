@@ -1,0 +1,23 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Reports collection: basic validation for client-created documents.
+    match /reports/{reportId} {
+      // Allow anyone to read reports (adjust as needed).
+      allow read: if true;
+
+      // Allow creation by anyone (prototype mode) but validate required fields.
+      // NOTE: This allows anonymous uploads; for production require `request.auth != null`.
+      allow create: if request.resource.data.keys().hasAll(['imageUrl','violationType','aiSuggestion','location','timestamp','status','userId'])
+        && request.resource.data.imageUrl is string
+        && request.resource.data.violationType is string
+        && request.resource.data.aiSuggestion is string
+        && request.resource.data.location.latitude is number
+        && request.resource.data.location.longitude is number
+        && request.resource.data.status in ['unauthorized','authorized'];
+
+      // Prevent client-side updates and deletes; use backend/service account only.
+      allow update, delete: if false;
+    }
+  }
+}
