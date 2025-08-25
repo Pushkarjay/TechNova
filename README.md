@@ -21,5 +21,3 @@ This repository contains a hackathon prototype for detecting and reporting unaut
 1. Install Flutter and set up your device/emulator.
 2. Run the mobile app (see `mobile/flutter_app/README.md`).
 3. Serve the dashboard locally (see `dashboard/README.md`).
-
-If you'd like, I can also generate a single consolidated `README` for the entire project that includes step-by-step instructions and a quick demo checklist.
