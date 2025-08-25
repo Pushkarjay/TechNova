@@ -4,9 +4,6 @@ import 'camera_screen.dart';
 import 'review_screen.dart';
 import '../services/sync_service.dart';
 import 'profile_screen.dart';
-import 'notifications_screen.dart';
-import 'leaderboard_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
@@ -44,15 +41,6 @@ class _HomeScreenState extends State<HomeScreen> {
     await _refreshPending();
     if (!mounted) return;
     messenger.showSnackBar(const SnackBar(content: Text('Sync complete')));
-    // persist a minimal notification for the notifications tab
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final list = prefs.getStringList('tn_notifications') ?? <String>[];
-      list.add('Sync completed at ${DateTime.now().toIso8601String()}');
-      await prefs.setStringList('tn_notifications', list);
-    } catch (_) {
-      // ignore
-    }
   }
 
   @override
@@ -136,10 +124,6 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     } else if (_selectedIndex == 1) {
       body = const ProfileScreen();
-    } else if (_selectedIndex == 2) {
-      body = const LeaderboardScreen();
-    } else if (_selectedIndex == 3) {
-      body = const NotificationsScreen();
     } else {
       body = SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -251,10 +235,6 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
               icon: Icon(Icons.camera_alt), label: 'Report'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.leaderboard), label: 'Leaderboard'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.notifications), label: 'Notifications'),
           BottomNavigationBarItem(icon: Icon(Icons.public), label: 'Dashboard'),
         ],
       ),

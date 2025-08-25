@@ -37,6 +37,3 @@ google-services.json
 .env.local
 # Android Profiling
 *.hprof
-
-docs/architecture.png
-docs/architecture.html
