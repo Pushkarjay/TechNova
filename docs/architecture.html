@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Architecture Diagram</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Styling for the Mermaid diagram SVG */
+        .mermaid svg {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-blue-100 text-gray-800 flex items-center justify-center min-h-screen p-4 sm:p-6 lg:p-8">
+    <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-6 sm:p-8 lg:p-12 w-full max-w-screen-xl mx-auto border border-gray-200">
+        <header class="text-center mb-10">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">System Architecture Diagram</h1>
+            <p class="text-gray-600 mt-2 text-lg">Unauthorized Billboards Reporting System</p>
+        </header>
+        
+        <!-- Mermaid Diagram Container -->
+        <div class="mermaid-container flex justify-center items-center overflow-auto">
+            <div class="mermaid" id="architecture-diagram">
+graph LR
+    subgraph "📱 Flutter Mobile App — Offline-first"
+        direction TB
+        A["<b>Camera UI & Screens</b><br/><small>mobile/flutter_app/lib/screens/*.dart</small>"]
+        B["<b>On-device ML (TFLite)</b><br/><small>tflite_model.tflite, tfservice.dart</small>"]
+        C["<b>Local Report Queue</b><br/><small>local_storage.dart</small>"]
+        D["<b>Sync Service (Background)</b><br/><small>sync_service.dart, cloudinary_service.dart</small>"]
+
+        A -- "1. User captures photo" --> B
+        B -- "2. ML suggests violation" --> C
+        C -- "3. Report is queued locally" --> D
+    end
+
+    subgraph "☁️ Cloud Services"
+        direction TB
+        E["<b>Cloudinary</b><br/><small>Image Hosting</small>"]
+        F["<b>Firebase Firestore</b><br/><small>Report Database</small>"]
+    end
+
+    subgraph "🖥️ Dashboard & Tools"
+        direction TB
+        G["<b>Static Dashboard</b><br/><small>index.html, main.js</small>"]
+        H["<b>Tools & Mock Data</b><br/><small>seed_firestore.py, authorized_billboards.json</small>"]
+    end
+
+    D -- "4a. Uploads image" --> E
+    D -- "4b. Writes report record" --> F
+    F -- "5. Subscribes to reports" --> G
+    H -- "Seeds sample data" --> F
+
+    %% --- Styling ---
+    %% Node Styles
+    style A fill:#D1FAE5,stroke:#065F46,stroke-width:2px
+    style B fill:#D1FAE5,stroke:#065F46,stroke-width:2px
+    style C fill:#D1FAE5,stroke:#065F46,stroke-width:2px
+    style D fill:#D1FAE5,stroke:#065F46,stroke-width:2px
+
+    style E fill:#DBEAFE,stroke:#1E40AF,stroke-width:2px
+    style F fill:#DBEAFE,stroke:#1E40AF,stroke-width:2px
+
+    style G fill:#FEF3C7,stroke:#92400E,stroke-width:2px
+    style H fill:#FEF3C7,stroke:#92400E,stroke-width:2px
+
+    %% Default class for all nodes
+    classDef default fill:#fff,stroke:#333,stroke-width:2px,font-family:Inter,font-size:15px;
+    
+    %% Link/Arrow Styles
+    linkStyle default stroke:#4B5563,stroke-width:2px;
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Mermaid.js
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                'primaryColor': '#ffffff',
+                'primaryTextColor': '#333333',
+                'primaryBorderColor': '#e5e7eb',
+                'lineColor': '#6b7280',
+                'textColor': '#374151',
+                'fontSize': '16px'
+            }
+        });
+    </script>
+</body>
+</html>
